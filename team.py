@@ -9,7 +9,7 @@ id = 74111
 #create a list with a sub list with data for each player
 list_players = []
 
-while (id < 74150):
+while (id < 74112):
   curr_url = url + str(id)
   data = requests.get(curr_url)
   soup = bs4.BeautifulSoup(data.text, "html.parser")
