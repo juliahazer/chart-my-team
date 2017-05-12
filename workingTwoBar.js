@@ -13,20 +13,15 @@ var playerArr = [];
 d3.tsv('./player_data.tsv', function(file){
   playerArr = file;
 
-  //this converts the Defaults "-" to "0"
-  playerArr.map(function(el){
-    if (el.Defaults === "-"){
-      el.Defaults = '0'
-    }
-    return el
-  })
-
   //sort by number of matches (and if matches are the same then sort by last name alphabetically)
   playerArr.sort(function(a,b) { 
     return a.Matches - b.Matches || a.Player.localeCompare(b.Player);
   });
 
-  console.log(playerArr)
+  //console.log(playerArr)
+
+  // var barPadding = 5;
+  // var barWidth = width / playerArr.length - barPadding;
 
   var yMax = d3.max(playerArr.map(d => d3.max(d.Matches)));
   //make the yMax 1 more than the greatest number of matches
@@ -44,15 +39,34 @@ d3.tsv('./player_data.tsv', function(file){
   xScale.domain(playerArr.map(d => d.Player));
   yScale.domain([0, yMax])
 
+  // var yScale = d3.scaleLinear()
+  //   .domain([0, yMax])
+  //   .range([height+margin.top, margin.top])
+
+  //x Axis 
+  // var xScale = d3.scaleBand()
+  //   .domain(playerArr.map(d => d.Player))
+  //   .range([0, width])
+    // .padding(0.1);
+
   var zScale = d3.scaleOrdinal()
-    .range(['black', 'red', 'green']);
+    .range(['red', 'yellow']);
 
   //array of all the keys in the player array (e.g., Player, City, etc)
   var keys = playerArr.columns.slice(1);
   
-  //Default, Loss, Win
-  var winLossKeys = [keys[8], keys[17], keys[16]];
-  console.log(winLossKeys)
+  //Win and Loss
+  var winLossKeys = [keys[16], keys[17]];
+  // console.log(winLossKeys)
+  // zScale.domain(winLossKeys);
+
+  // var dataIntermediate = winLossKeys.map(function(el){
+  //   return playerArr.map(function(elem){
+  //     return {x: elem.Player, y: elem[el]};
+  //   })
+  // })
+
+  // console.log(dataIntermediate)
 
   d3.select('svg')
       .attr('width', width + margin.left + margin.right)
@@ -96,7 +110,38 @@ d3.tsv('./player_data.tsv', function(file){
       .style("font-size", "16px")   
       .text("Matches");
 
+  // d3.select('svg')
+  // layer.selectAll('rect')
+  //   .data(function(d){
+  //     return d;
+  //   })
+  //   .enter()
+  //   .append('rect')
+  //   .attr('x', function)
 
+  // //.selectAll('rect')
+  //   .data(playerArr) 
+  //   .enter()
+  //   .append('rect')
+  //     .attr('x', (d, i) => (barWidth + barPadding) * i)
+  //     .attr('y', d => yScale(d.Matches - d.Win))
+  //     .attr('width', barWidth)
+  //     .attr('height', d => height + margin.top - yScale(d.Loss))
+  //     .style('fill', 'red')
+  
+  // d3.select('svg')
+  //   .selectAll('rect')
+  //   .data(playerArr) 
+  //   .enter()
+  //   .append('rect')
+  //     .attr('x', (d, i) => (barWidth + barPadding) * i)
+  //     .attr('y', d => yScale(d.Matches))
+  //     .attr('width', barWidth)
+  //     .attr('height', d => height + margin.top - yScale(d.Win))
+  //     .style('fill', 'yellow')
+
+
+  //limit ticks to whole numbers?? 
   var yAxis = d3.axisRight(yScale)
                 //.ticks(yMax);
               // .tickFormat(d3.format('d'))

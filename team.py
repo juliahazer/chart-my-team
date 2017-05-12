@@ -5,11 +5,13 @@ import re
 
 url = 'https://www.ustanorcal.com/teaminfo.asp?id='
 id = 63383
+#id = 74997
 
 #create a list with a sub list with data for each player
 list_players = []
 header_lst = []
 
+#while (id < 74998):
 while (id < 63384):
   curr_url = url + str(id)
   data = requests.get(curr_url)
@@ -43,6 +45,8 @@ while (id < 63384):
   header_tds = headers.select('td')
   header_lst = [header_td.text.rstrip() for header_td in header_tds]
   header_lst.insert(0, 'Team Name')
+  header_lst.append('Win')
+  header_lst.append('Loss')
 
   for row in rows:
     tds = row.select('td')
@@ -53,6 +57,12 @@ while (id < 63384):
   id += 1
 
 #print(list_players)
+
+for player in list_players:
+  str_win_loss = player[7]
+  arr = str_win_loss.split(' / ')
+  player.append(arr[0]) #append Win
+  player.append(arr[1]) #append Loss
 
 # save the data as a tab-separated file
 with open('player_data.tsv', 'w') as tsvfile:
