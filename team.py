@@ -4,12 +4,13 @@ import csv
 import re
 
 url = 'https://www.ustanorcal.com/teaminfo.asp?id='
-id = 74111
+id = 63383
 
 #create a list with a sub list with data for each player
 list_players = []
+header_lst = []
 
-while (id < 74112):
+while (id < 63384):
   curr_url = url + str(id)
   data = requests.get(curr_url)
   soup = bs4.BeautifulSoup(data.text, "html.parser")
@@ -39,6 +40,9 @@ while (id < 74112):
   rows.pop(0)
 
   headers = rows.pop(0)
+  header_tds = headers.select('td')
+  header_lst = [header_td.text.rstrip() for header_td in header_tds]
+  header_lst.insert(0, 'Team Name')
 
   for row in rows:
     tds = row.select('td')
@@ -53,6 +57,7 @@ while (id < 74112):
 # save the data as a tab-separated file
 with open('player_data.tsv', 'w') as tsvfile:
   writer = csv.writer(tsvfile, delimiter="\t")
+  writer.writerow(header_lst)
   writer.writerows(list_players)
 
 
