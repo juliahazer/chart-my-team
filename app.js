@@ -1,7 +1,7 @@
 // set the dimensions and margins of the graph
 var margin = {
   top: 20, 
-  right: 40, 
+  right: 100, 
   bottom: 110, 
   left: 50
 }
@@ -60,7 +60,7 @@ d3.tsv('./player_data.tsv', function(file){
       .align(0.1);
 
   var yScale = d3.scaleLinear()
-      .rangeRound([height+margin.top, margin.top])
+      .rangeRound([height, 0])
       .domain([0, yMax])
 
   var zScale;
@@ -117,10 +117,10 @@ d3.tsv('./player_data.tsv', function(file){
       .enter()
       .append('rect')
         .attr('x', d => {
-          return xScale(d.data.Player) - margin.left 
+          return xScale(d.data.Player) 
         })
         .attr('y', d => {
-          return yScale(d[1]) - margin.top
+          return yScale(d[1])
         })
         .attr('height', d => yScale(d[0]) - yScale(d[1]))
         .attr('width', xScale.bandwidth())
@@ -151,13 +151,13 @@ d3.tsv('./player_data.tsv', function(file){
         });
 
     legend.append('rect')
-        .attr('x', width+15)
+        .attr('x', width+margin.left+19)
         .attr('width', 19)
         .attr('height', 19)
         .attr('fill', zScale);
 
     legend.append('text')
-        .attr('x', width+10)
+        .attr('x', width+margin.left+10)
         .attr('y', 9.5)
         .attr('dy', '0.32em')
         .text(d => d);
@@ -322,13 +322,13 @@ d3.tsv('./player_data.tsv', function(file){
     d3.select('svg')
       .append('g')
         .attr('class', 'xAxis')
-        .attr('transform', 'translate(0,' + (height + margin.top) + ")")
+        .attr('transform', 'translate(' + margin.left + ',' + (height + margin.top) + ")")
         .call(xAxis)
         .selectAll('text')
           .style('text-anchor', 'end') //ensures end of label is attached to the axis tick
           .attr('dx', '-.8em')
           .attr('dy', '-.15em')
-          .attr('transform', 'rotate(-90)');//'rotate(-65)');
+          .attr('transform', 'rotate(-50)');//'rotate(-65)');
   }
 
   function drawYAxis(){
@@ -338,7 +338,7 @@ d3.tsv('./player_data.tsv', function(file){
     d3.select('svg')
       .append('g')
         .attr('class', 'yAxis')
-        .attr('transform', 'translate(' + width + ', 0)') //shifts axis
+        .attr('transform', 'translate(' + (width + margin.left) + ',' + margin.top + ')') //shifts axis
         .call(yAxis)
   }
 
