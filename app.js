@@ -2,8 +2,8 @@
 var margin = {
   top: 20, 
   right: 100, 
-  bottom: 110, 
-  left: 50
+  bottom: 130, 
+  left: 80
 }
 var width = 900 - margin.left - margin.right;
 var height = 500 - margin.top - margin.bottom;
@@ -78,23 +78,23 @@ d3.tsv('./player_data.tsv', function(file){
 
     //type is based on the select values (event listener)
     if (type === 'Matches'){
-      colorArr = ['black', 'red', 'green'];
+      colorArr = ['#A8927B', '#564036', '#EF7D5A'];
       //Default, Loss, Win
       keysArr = [keys[8], keys[17], keys[16]];
     } else if (type === 'Win'){
-      colorArr = ['green'];
+      colorArr = ['#EF7D5A'];
       keysArr = [keys[16]];
     } else if (type === 'Loss'){
-      colorArr = ['red'];
+      colorArr = ['#564036'];
       keysArr = [keys[17]];
     } else if (type === 'Singles'){
-      colorArr = ['blue'];
+      colorArr = ['#516EBA'];
       keysArr = [keys[10]];
     } else if (type === 'Doubles'){
-      colorArr = ['pink'];
+      colorArr = ['#E3C247'];
       keysArr = [keys[11]];
     } else if (type === 'SinglesDoubles'){
-      colorArr = ['blue', 'pink'];
+      colorArr = ['#516EBA', '#E3C247'];
       keysArr = [keys[10], keys[11]];
     } else if (type === 'WinPercentage'){
       colorArr = ['yellow'];
@@ -184,13 +184,13 @@ d3.tsv('./player_data.tsv', function(file){
         });
 
     legend.append('rect')
-        .attr('x', width+margin.left+19)
+        .attr('x', width+50+19)
         .attr('width', 19)
         .attr('height', 19)
         .attr('fill', zScale);
 
     legend.append('text')
-        .attr('x', width+margin.left+10)
+        .attr('x', width+50+10)
         .attr('y', 9.5)
         .attr('dy', '0.32em')
         .text(d => d);

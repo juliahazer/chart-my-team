@@ -1,5 +1,13 @@
 body {
+  font-family: 'Tahoma', serif;
   text-align: center;
+  background-color: #F4F5F3;
+}
+
+h1 {
+  color: #659667;
+  font-size: 33px;
+  letter-spacing: 0.1em;
 }
 
 select {
@@ -7,16 +15,21 @@ select {
   margin: 0 auto;
 }
 
+.xAxis text {
+  fill: #085B6F;
+  font-size: 13px;
+}
+
 div.tooltip {
   point-events: none;
   position: absolute;
-  text-align: center;     
-  width: 150px;          
-  height: 80px;         
-  padding: 2px;       
-  font: 12px sans-serif;    
-  background: lightsteelblue; 
-  border: 0px;    
-  border-radius: 8px;     
-  pointer-events: none; 
+  text-align: center;
+  width: 150px;
+  height: 80px;
+  padding: 2px;
+  font: 12px sans-serif;
+  background: lightsteelblue;
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
 }
