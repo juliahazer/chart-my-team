@@ -74,9 +74,11 @@ d3.tsv('./player_data.tsv', function(file){
   var winLossKeys = [keys[8], keys[17], keys[16]];
   var doublesKeys = [keys[11]];
   var singlesKeys = [keys[10]];
+  var singlesDoublesKeys = [keys[10], keys[11]];
   // console.log(winLossKeys);
   // console.log(doublesKeys);
   // console.log(singlesKeys);
+  // console.log(singlesDoublesKeys);
 
   d3.select('svg')
       .attr('width', width + margin.left + margin.right)
@@ -127,20 +129,21 @@ d3.tsv('./player_data.tsv', function(file){
         tooltipDrawText(d);
       })
       .on('mouseout', () => tooltip.style('opacity', 0));
+    
+    drawMatchLegend(winLossKeys);
 
     drawXAxis();
     drawYAxis();
-    drawMatchLegend();
   }
 
-  function drawMatchLegend(){
+  function drawMatchLegend(keys){
     var legend = g.append('g')
         .attr('class', 'legendMatches')
         .attr('font-family', 'sans-serif')
         .attr('font-size', 10)
         .attr('text-anchor', 'end')
       .selectAll('g')
-      .data(winLossKeys.slice().reverse())
+      .data(keys.slice().reverse())
       .enter()
       .append('g')
         .attr('transform', (d, i) =>{
@@ -198,6 +201,7 @@ d3.tsv('./player_data.tsv', function(file){
       })
       .on('mouseout', () => tooltip.style('opacity', 0));
 
+    drawMatchLegend(singlesKeys); 
     drawXAxis();
     drawYAxis();
   }
@@ -240,6 +244,50 @@ d3.tsv('./player_data.tsv', function(file){
       })
       .on('mouseout', () => tooltip.style('opacity', 0));
 
+    drawMatchLegend(doublesKeys);  
+    drawXAxis();
+    drawYAxis();
+  }
+
+  function drawSinglesDoubles(){
+    //sort by number of singles (and if singles are the same then sort by last name alphabetically)
+    playerArr.sort(function(a,b) { 
+      return a.Matches - b.Matches || a.Player.localeCompare(b.Player);
+    });
+
+    xScale.domain(playerArr.map(d => d.Player));
+
+    zScale = d3.scaleOrdinal()
+      .range(['blue', 'pink']);
+
+    g.append('g')
+        .attr('class', 'singlesDoubles')
+      .selectAll('g')
+      .data(d3.stack().keys(singlesDoublesKeys)(playerArr))
+      .enter()
+      .append('g')
+        .attr('fill', function(d){
+          return zScale(d.key);
+        })
+      .selectAll('rect')
+      .data(d => d)
+      .enter()
+      .append('rect')
+        .attr('x', d => {
+          return xScale(d.data.Player) - margin.left 
+        })
+        .attr('y', d => {
+          return yScale(d[1]) - margin.top
+        })
+        .attr('height', d => yScale(d[0]) - yScale(d[1]))
+        .attr('width', xScale.bandwidth())
+      .on('mouseenter', function(d){
+        // console.log(d.data)
+        tooltipDrawText(d);
+      })
+      .on('mouseout', () => tooltip.style('opacity', 0));
+
+    drawMatchLegend(singlesDoublesKeys);
     drawXAxis();
     drawYAxis();
   }
@@ -297,46 +345,63 @@ d3.tsv('./player_data.tsv', function(file){
   //EVENT LISTENER FOR SELECT CHANGE
   d3.select('select').on('change', function(){
     var newVal = d3.select('select').property('value');
-    yMax = d3.max(playerArr.map(d => d3.max(d[newVal])));
+    // yMax = d3.max(playerArr.map(d => d3.max(d[newVal])));
 
     if (newVal === 'Matches'){
       removeSingles();
       removeDoubles();
+      removeSinglesDoubles();
       drawMatches();
     } else if (newVal === 'Singles'){
       removeMatches();
       removeDoubles();
+      removeSinglesDoubles();
       drawSingles();
     } else if (newVal === 'Doubles'){
-      removeSingles();
       removeMatches();
+      removeSingles();
+      removeSinglesDoubles();
       drawDoubles();
+    } else if (newVal === 'SinglesDoubles'){
+      // console.log('here')
+      removeMatches();
+      removeSingles();
+      removeDoubles();
+      drawSinglesDoubles();
     }
 
   })
+
+  function removeMatches(){
+    d3.select('svg')
+      .select('.matches')
+        .remove()
+    removeAxes();
+    removeLegend();
+  }
 
   function removeDoubles(){
     d3.select('svg')
       .select('.doubles')
         .remove() 
-    removeAxes();    
+    removeAxes(); 
+    removeLegend();   
   }
 
   function removeSingles(){
     d3.select('svg')
       .select('.singles')
         .remove()  
-    removeAxes();   
+    removeAxes();  
+    removeLegend(); 
   }
 
-  function removeMatches(){
+  function removeSinglesDoubles(){
     d3.select('svg')
-      .select('.matches')
-        .remove()
-    d3.select('svg')
-      .select('.legendMatches')
+      .select('.singlesDoubles')
         .remove()
     removeAxes();
+    removeLegend();
   }
 
   function removeAxes(){
@@ -345,6 +410,12 @@ d3.tsv('./player_data.tsv', function(file){
         .remove()
     d3.select('svg')
       .select('.yAxis')
+        .remove()
+  }
+
+  function removeLegend(){
+    d3.select('svg')
+      .select('.legendMatches')
         .remove()
   }
 
