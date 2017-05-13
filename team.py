@@ -5,13 +5,13 @@ import re
 
 url = 'https://www.ustanorcal.com/teaminfo.asp?id='
 id = 63383
-#id = 74997
+# id = 74997
 
 #create a list with a sub list with data for each player
 list_players = []
 header_lst = []
 
-#while (id < 74998):
+# while (id < 74998):
 while (id < 63384):
   curr_url = url + str(id)
   data = requests.get(curr_url)
