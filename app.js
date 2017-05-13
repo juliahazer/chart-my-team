@@ -42,7 +42,7 @@ d3.tsv('./player_data.tsv', function(file){
     return el
   })
 
-  console.log(playerArr)
+  // console.log(playerArr)
 
   //http://bl.ocks.org/d3noob/a22c42db65eb00d4e369
   var tooltip = d3.select("body")
@@ -50,35 +50,15 @@ d3.tsv('./player_data.tsv', function(file){
                   .classed('tooltip', true)
                   .style("opacity",0);
 
-  var yMax = d3.max(playerArr.map(d => d3.max(d.Matches)));
-  //make the yMax 1 more than the greatest number of matches
-  yMax++;
+  var yMax;
 
-  var xScale = d3.scaleBand()
-      .rangeRound([0, width])
-      .paddingInner(0.2)
-      .align(0.1);
-
-  var yScale = d3.scaleLinear()
-      .rangeRound([height, 0])
-      .domain([0, yMax])
-
+  var xScale;
+  var yScale;
   var zScale;
-  // var zScale = d3.scaleOrdinal()
-    // .range(['black', 'red', 'green']);
 
   //array of all the keys in the player array (e.g., Player, City, etc)
   var keys = playerArr.columns.slice(1);
-  
-  //Default, Loss, Win
-  var winLossKeys = [keys[8], keys[17], keys[16]];
-  var doublesKeys = [keys[11]];
-  var singlesKeys = [keys[10]];
-  var singlesDoublesKeys = [keys[10], keys[11]];
-  // console.log(winLossKeys);
-  // console.log(doublesKeys);
-  // console.log(singlesKeys);
-  // console.log(singlesDoublesKeys);
+
 
   d3.select('svg')
       .attr('width', width + margin.left + margin.right)
@@ -90,23 +70,77 @@ d3.tsv('./player_data.tsv', function(file){
 
   //ON FIRST LOAD, DRAW TITLE & DISPLAY MATCHES
   drawTitle();
-  drawMatches();
+  drawChart('Matches');
 
-  function drawMatches(){
-    //sort by number of matches (and if matches are the same then sort by last name alphabetically)
-    playerArr.sort(function(a,b) { 
-      return a.Matches - b.Matches || a.Player.localeCompare(b.Player);
-    });
+  function drawChart(type){
+    var colorArr = [];
+    var keysArr = [];
 
+    //type is based on the select values (event listener)
+    if (type === 'Matches'){
+      colorArr = ['black', 'red', 'green'];
+      //Default, Loss, Win
+      keysArr = [keys[8], keys[17], keys[16]];
+    } else if (type === 'Win'){
+      colorArr = ['green'];
+      keysArr = [keys[16]];
+    } else if (type === 'Loss'){
+      colorArr = ['red'];
+      keysArr = [keys[17]];
+    } else if (type === 'Singles'){
+      colorArr = ['blue'];
+      keysArr = [keys[10]];
+    } else if (type === 'Doubles'){
+      colorArr = ['pink'];
+      keysArr = [keys[11]];
+    } else if (type === 'SinglesDoubles'){
+      colorArr = ['blue', 'pink'];
+      keysArr = [keys[10], keys[11]];
+    } else if (type === 'WinPercentage'){
+      colorArr = ['yellow'];
+      keysArr = [keys[9]];
+    }
+    
+    //sort by y-axis value (and if same values, then sort by last name alphabetically)
+    if (type === 'SinglesDoubles'){
+      playerArr.sort(function(a,b) { 
+        return a.Matches - b.Matches || a.Player.localeCompare(b.Player);
+      });
+      yMax = d3.max(playerArr.map(d => d3.max(d['Matches'])));
+    } else if (type === 'WinPercentage'){
+      playerArr.sort(function(a,b) {
+        return a['Win %'] - b['Win %'] || a.Player.localeCompare(b.Player);
+      });
+      yMax = 100;
+    } else {
+      playerArr.sort(function(a,b) { 
+        return a[type] - b[type] || a.Player.localeCompare(b.Player);
+      });
+      yMax = d3.max(playerArr.map(d => d3.max(d[type])));
+    }
+
+    //make the yMax 1 more than the greatest number value
+    if (yMax !== 100){
+      yMax++;
+    }
+
+    xScale = d3.scaleBand()
+      .rangeRound([0, width])
+      .paddingInner(0.2)
+      .align(0.1);
     xScale.domain(playerArr.map(d => d.Player));
+    
+    yScale = d3.scaleLinear()
+      .rangeRound([height, 0])
+      .domain([0, yMax]);
 
     zScale = d3.scaleOrdinal()
-      .range(['black', 'red', 'green']);
+      .range(colorArr);
 
     g.append('g')
-        .attr('class', 'matches')
+        .attr('class', 'chart') //NEED TO CHANGE
       .selectAll('g')
-      .data(d3.stack().keys(winLossKeys)(playerArr))
+      .data(d3.stack().keys(keysArr)(playerArr))
       .enter()
       .append('g')
         .attr('fill', function(d){
@@ -125,12 +159,11 @@ d3.tsv('./player_data.tsv', function(file){
         .attr('height', d => yScale(d[0]) - yScale(d[1]))
         .attr('width', xScale.bandwidth())
       .on('mouseenter', function(d){
-        // console.log(d.data)
         tooltipDrawText(d);
       })
       .on('mouseout', () => tooltip.style('opacity', 0));
     
-    drawMatchLegend(winLossKeys);
+    drawMatchLegend(keysArr);
 
     drawXAxis();
     drawYAxis();
@@ -161,135 +194,6 @@ d3.tsv('./player_data.tsv', function(file){
         .attr('y', 9.5)
         .attr('dy', '0.32em')
         .text(d => d);
-  }
-
-  function drawSingles(){
-    //sort by number of singles (and if singles are the same then sort by last name alphabetically)
-    playerArr.sort(function(a,b) { 
-      return a.Singles - b.Singles || a.Player.localeCompare(b.Player);
-    });
-
-    xScale.domain(playerArr.map(d => d.Player));
-
-    zScale = d3.scaleOrdinal()
-      .range(['blue']);
-
-    g.append('g')
-        .attr('class', 'singles')
-      .selectAll('g')
-      .data(d3.stack().keys(singlesKeys)(playerArr))
-      .enter()
-      .append('g')
-        .attr('fill', function(d){
-          return zScale(d.key);
-        })
-      .selectAll('rect')
-      .data(d => d)
-      .enter()
-      .append('rect')
-        .attr('x', d => {
-          return xScale(d.data.Player) - margin.left 
-        })
-        .attr('y', d => {
-          return yScale(d[1]) - margin.top
-        })
-        .attr('height', d => yScale(d[0]) - yScale(d[1]))
-        .attr('width', xScale.bandwidth())
-      .on('mouseenter', function(d){
-        // console.log(d.data)
-        tooltipDrawText(d);
-      })
-      .on('mouseout', () => tooltip.style('opacity', 0));
-
-    drawMatchLegend(singlesKeys); 
-    drawXAxis();
-    drawYAxis();
-  }
-
-  function drawDoubles(){
-    //sort by number of doubles (and if doubles are the same then sort by last name alphabetically)
-    playerArr.sort(function(a,b) { 
-      return a.Doubles - b.Doubles || a.Player.localeCompare(b.Player);
-    });
-
-    xScale.domain(playerArr.map(d => d.Player));
-
-    zScale = d3.scaleOrdinal()
-      .range(['pink']);
-
-    g.append('g')
-        .attr('class', 'doubles')
-      .selectAll('g')
-      .data(d3.stack().keys(doublesKeys)(playerArr))
-      .enter()
-      .append('g')
-        .attr('fill', function(d){
-          return zScale(d.key);
-        })
-      .selectAll('rect')
-      .data(d => d)
-      .enter()
-      .append('rect')
-        .attr('x', d => {
-          return xScale(d.data.Player) - margin.left 
-        })
-        .attr('y', d => {
-          return yScale(d[1]) - margin.top
-        })
-        .attr('height', d => yScale(d[0]) - yScale(d[1]))
-        .attr('width', xScale.bandwidth())
-      .on('mouseenter', function(d){
-        // console.log(d.data)
-        tooltipDrawText(d);
-      })
-      .on('mouseout', () => tooltip.style('opacity', 0));
-
-    drawMatchLegend(doublesKeys);  
-    drawXAxis();
-    drawYAxis();
-  }
-
-  function drawSinglesDoubles(){
-    //sort by number of singles (and if singles are the same then sort by last name alphabetically)
-    playerArr.sort(function(a,b) { 
-      return a.Matches - b.Matches || a.Player.localeCompare(b.Player);
-    });
-
-    xScale.domain(playerArr.map(d => d.Player));
-
-    zScale = d3.scaleOrdinal()
-      .range(['blue', 'pink']);
-
-    g.append('g')
-        .attr('class', 'singlesDoubles')
-      .selectAll('g')
-      .data(d3.stack().keys(singlesDoublesKeys)(playerArr))
-      .enter()
-      .append('g')
-        .attr('fill', function(d){
-          return zScale(d.key);
-        })
-      .selectAll('rect')
-      .data(d => d)
-      .enter()
-      .append('rect')
-        .attr('x', d => {
-          return xScale(d.data.Player) - margin.left 
-        })
-        .attr('y', d => {
-          return yScale(d[1]) - margin.top
-        })
-        .attr('height', d => yScale(d[0]) - yScale(d[1]))
-        .attr('width', xScale.bandwidth())
-      .on('mouseenter', function(d){
-        // console.log(d.data)
-        tooltipDrawText(d);
-      })
-      .on('mouseout', () => tooltip.style('opacity', 0));
-
-    drawMatchLegend(singlesDoublesKeys);
-    drawXAxis();
-    drawYAxis();
   }
 
   function tooltipDrawText(d){
@@ -332,8 +236,12 @@ d3.tsv('./player_data.tsv', function(file){
   }
 
   function drawYAxis(){
+    var numTicks = yMax;
+    if (yMax === 100){
+      numTicks = 10; 
+    }
     var yAxis = d3.axisRight(yScale)
-                  .ticks(yMax);
+                  .ticks(numTicks);
     //add the y Axis
     d3.select('svg')
       .append('g')
@@ -345,61 +253,15 @@ d3.tsv('./player_data.tsv', function(file){
   //EVENT LISTENER FOR SELECT CHANGE
   d3.select('select').on('change', function(){
     var newVal = d3.select('select').property('value');
-    // yMax = d3.max(playerArr.map(d => d3.max(d[newVal])));
-
-    if (newVal === 'Matches'){
-      removeSingles();
-      removeDoubles();
-      removeSinglesDoubles();
-      drawMatches();
-    } else if (newVal === 'Singles'){
-      removeMatches();
-      removeDoubles();
-      removeSinglesDoubles();
-      drawSingles();
-    } else if (newVal === 'Doubles'){
-      removeMatches();
-      removeSingles();
-      removeSinglesDoubles();
-      drawDoubles();
-    } else if (newVal === 'SinglesDoubles'){
-      // console.log('here')
-      removeMatches();
-      removeSingles();
-      removeDoubles();
-      drawSinglesDoubles();
-    }
-
+    removeChart();
+    drawChart(newVal);
   })
 
-  function removeMatches(){
-    d3.select('svg')
-      .select('.matches')
-        .remove()
-    removeAxes();
-    removeLegend();
-  }
+  function removeChart(){
+    var svg = d3.select('svg');
 
-  function removeDoubles(){
-    d3.select('svg')
-      .select('.doubles')
-        .remove() 
-    removeAxes(); 
-    removeLegend();   
-  }
-
-  function removeSingles(){
-    d3.select('svg')
-      .select('.singles')
-        .remove()  
-    removeAxes();  
-    removeLegend(); 
-  }
-
-  function removeSinglesDoubles(){
-    d3.select('svg')
-      .select('.singlesDoubles')
-        .remove()
+    svg.select('.chart')
+        .remove(); 
     removeAxes();
     removeLegend();
   }
