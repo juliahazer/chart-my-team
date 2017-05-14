@@ -45,8 +45,8 @@ while (id < 63384):
   header_tds = headers.select('td')
   header_lst = [header_td.text.rstrip() for header_td in header_tds]
   header_lst.insert(0, 'Team Name')
-  header_lst.append('Win')
-  header_lst.append('Loss')
+  header_lst.append('Won')
+  header_lst.append('Lost')
 
   for row in rows:
     tds = row.select('td')

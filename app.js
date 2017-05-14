@@ -1,31 +1,33 @@
 // set the dimensions and margins of the graph
 var margin = {
-  top: 20, 
+  top: 60, 
   right: 120, 
   bottom: 130, 
   left: 80
 }
+
 var width = 900 - margin.left - margin.right;
 var height = 500 - margin.top - margin.bottom;
 
+//will hold all the data from the .tsv file
 var playerArr = [];
 
 d3.tsv('./player_data.tsv', function(file){
   playerArr = file;
 
+  var teamName = playerArr[0]["Team Name"];
+
   var totalTeamWins = playerArr.reduce(function(acc, el){
-    return acc + Number(el.Win);
-  }, 0);
-
+        return acc + Number(el.Won);
+      }, 0);
   var totalTeamLoss = playerArr.reduce(function(acc, el){
-    return acc + Number(el.Loss);
-  }, 0);
-
+        return acc + Number(el.Lost);
+      }, 0);
   var totalTeamPlays = totalTeamWins + totalTeamLoss;
   var teamWinPercent = Math.round(totalTeamWins / totalTeamPlays * 100);
   var teamLossPercent = Math.round(totalTeamLoss / totalTeamPlays * 100);
 
-  //this converts the Defaults "-" to "0"
+  //this converts some of the "-" fields to "0"
   playerArr.map(function(el){
     if (el.Defaults === "-"){
       el.Defaults = '0'
@@ -44,21 +46,18 @@ d3.tsv('./player_data.tsv', function(file){
 
   // console.log(playerArr)
 
-  //http://bl.ocks.org/d3noob/a22c42db65eb00d4e369
   var tooltip = d3.select("body")
                   .append("div")
                   .classed('tooltip', true)
                   .style("opacity",0);
 
   var yMax;
-
   var xScale;
   var yScale;
   var zScale;
 
   //array of all the keys in the player array (e.g., Player, City, etc)
   var keys = playerArr.columns.slice(1);
-
 
   d3.select('.svgChart')
       .attr('width', width + margin.left + margin.right)
@@ -69,38 +68,64 @@ d3.tsv('./player_data.tsv', function(file){
     .append('g')
       .attr('transform', 'translate(' + margin.left + "," + margin.top + ")");
 
-  //ON FIRST LOAD, DRAW TITLE & DISPLAY MATCHES
-  // drawTitle();
+  //ON FIRST LOAD DRAW CHART
   drawChart('Matches');
 
+  //DRAW TEAM NAME
+  drawTeamName();
+
+  /******************EVENT LISTENERS*********************/
+  //draw different charts based on which button is clicked
+  d3.selectAll('.btnCustom').on('click', function(){
+    d3.selectAll('.btnCustom')
+      .classed('active', false);
+    d3.event.preventDefault();
+    d3.select(this)
+      .classed('active', true)
+    var newVal = d3.select(this).attr('data-val');
+    removeChart(newVal);
+  })
+
+  /******************FUNCTIONS*********************/
   function drawChart(type){
     var colorArr = [];
     var keysArr = [];
+    var chartTitle = "# ";
+    // var chartSubTitle = "";
 
     //type is based on the select values (event listener)
     if (type === 'Matches'){
       colorArr = ['#A8927B', '#564036', '#EF7D5A'];
       //Default, Loss, Win
       keysArr = [keys[8], keys[17], keys[16]];
-    } else if (type === 'Win'){
+      chartTitle += "Matches Won / Lost (by Player)";
+    } else if (type === 'Won'){
       colorArr = ['#EF7D5A'];
       keysArr = [keys[16]];
-    } else if (type === 'Loss'){
+      chartTitle += "Matches Won (by Player)";
+    } else if (type === 'Lost'){
       colorArr = ['#564036'];
       keysArr = [keys[17]];
+      chartTitle += "Matches Lost (by Player)"
     } else if (type === 'Singles'){
       colorArr = ['#516EBA'];
       keysArr = [keys[10]];
+      chartTitle += "Singles Matches Played (by Player)";
     } else if (type === 'Doubles'){
       colorArr = ['#E3C247'];
       keysArr = [keys[11]];
+      chartTitle += "Doubles Matches Played (by Player)";
     } else if (type === 'SinglesDoubles'){
       colorArr = ['#516EBA', '#E3C247'];
       keysArr = [keys[10], keys[11]];
+      chartTitle += "Singles / Doubles Matches Played (by Player)"
     } else if (type === 'WinPercentage'){
       colorArr = ['#EF7D5A'];
       keysArr = [keys[9]];
+      chartTitle = "Match Win Percentage (by Player)"
     }
+
+    drawTitle(chartTitle);
     
     //sort by y-axis value (and if same values, then sort by last name alphabetically)
     if (type === 'SinglesDoubles'){
@@ -119,11 +144,6 @@ d3.tsv('./player_data.tsv', function(file){
       });
       yMax = d3.max(playerArr.map(d => d3.max(d[type])));
     }
-
-    //make the yMax 1 more than the greatest number value
-    // if (yMax !== 100){
-    //   yMax++;
-    // }
 
     xScale = d3.scaleBand()
       .rangeRound([0, width])
@@ -167,30 +187,14 @@ d3.tsv('./player_data.tsv', function(file){
       .on('mouseout', () => tooltip.style('opacity', 0));
 
     /*add transition effects to fade in*/
-    g.selectAll('rect').
-      transition().duration(800).ease(d3.easeLinear).style('opacity', 1)
+    g.selectAll('rect')
+      .transition()
+      .duration(800)
+      .ease(d3.easeLinear)
+      .style('opacity', 1);
 
-    // d3.select('.svgChart').selectAll('.bar')
-    //   .data(data)
-    //   .enter()
-    //   .append('text')
-      // .text(d => {
-      //   console.log(d)
-      //   return d
-      // })
-      // .attr('x', function(d,i){
-      //   return 40
-      //   // return i * (width / playerArr.length) + 5;
-      // })
-      // .attr('y', function(d){
-      //   return 40
-      //   // return height - d*4 + 15;
-      // })
-      // .attr('font-size', 14)
-      // .attr('fill', 'black');
-
+    //call to functions
     drawLegend(keysArr);
-
     drawXAxis();
     drawYAxis();
   }
@@ -226,7 +230,7 @@ d3.tsv('./player_data.tsv', function(file){
     tooltip.html(`
       ${d.data.Player}<br>
       ${d.data["Win %"]}% Win<br> 
-      Won: ${d.data.Win}; Loss: ${d.data.Loss}<br>
+      Won: ${d.data.Won}; Lost: ${d.data.Lost}<br>
       ${d.data.Singles} Singles Played<br>
       ${d.data.Doubles} Doubles Played<br>
       City: ${d.data.City}<br>
@@ -237,15 +241,29 @@ d3.tsv('./player_data.tsv', function(file){
           .style('top', d3.event.pageY + 'px');
   }
 
-  // function drawTitle(){
-  //   d3.select('.svgChart')
-  //     .append("text")
-  //       .attr("x", margin.left)             
-  //       .attr("y", margin.top)
-  //       .attr("text-anchor", "middle")  
-  //       .style("font-size", "16px")   
-  //       .text("Team");
-  // }
+  function drawTeamName(){
+    d3.select('.svgChart')
+      .append('text')
+        .attr('class', 'teamName')
+        .attr('x', (width + margin.left + margin.right) / 2)
+        .attr('y', margin.top / 2)
+        .attr("text-anchor", "middle")
+        .text(teamName)
+  }
+
+  function drawTitle(title){
+    //first remove old title
+    d3.select('.chartTitle')
+      .remove();
+    //then draw the new chart title
+    d3.select('.svgChart')
+      .append("text")
+        .attr('class', 'chartTitle')
+        .attr("x", (width + margin.left + margin.right) / 2)
+        .attr("y", margin.top-5)
+        .attr("text-anchor", "middle")
+        .text(title);
+  }
 
   function drawXAxis(){
     var xAxis = d3.axisBottom(xScale);
@@ -277,16 +295,6 @@ d3.tsv('./player_data.tsv', function(file){
         .call(yAxis)
   }
 
-  //EVENT LISTENER FOR SELECT CHANGE
-  d3.selectAll('.btnCustom').on('click', function(){
-    d3.selectAll('.btnCustom')
-      .classed('active', false);
-    d3.event.preventDefault();
-    d3.select(this)
-      .classed('active', true)
-    var newVal = d3.select(this).attr('data-val');
-    removeChart(newVal);
-  })
 
   function removeChart(newVal){
     var svg = d3.select('.svgChart');

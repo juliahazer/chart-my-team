@@ -8,6 +8,7 @@ light brown: #A8927B
 blue: #516EBA
 yellow: #E3C247
 dark blue: #085B6F
+tooltipBrown: #A26E56;
 */
 
 body {
@@ -27,14 +28,14 @@ body {
 }
 
 h1 {
-  color: #4BA181;
+  color: #659667;
   font-weight: 700;
   font-size: 33px;
   letter-spacing: 0.1em;
 }
 
 .svgRacket {
-  fill: #4BA181;
+  fill: #659667;
 }
 
 .svgChart {
@@ -43,9 +44,10 @@ h1 {
 }
 
 .btnCustom {
-  color: white;
-  background-color: #3088BC;
-  font-size: 16px;
+  margin: 3px;
+  color: #F4F5F3;
+  background-color: #AD8564;
+  font-size: 15px;
   transition: all 0.3s ease-in-out;
 }
 
@@ -53,13 +55,27 @@ h1 {
 .btnCustom:focus,
 .btnCustom:active,
 .active {
-  color: white;
-  background: #FFA435;
+  color: #F4F5F3;
+  background: #75AD77;
 }
 
 select {
   display: block;
   margin: 0 auto;
+}
+
+.teamName,
+.chartTitle {
+  fill: #87684E;
+}
+
+.teamName {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.chartTitle {
+  font-size: 16px;
 }
 
 .xAxis text,
