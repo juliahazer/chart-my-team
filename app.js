@@ -2,7 +2,7 @@
 var margin = {
   top: 60, 
   right: 120, 
-  bottom: 130, 
+  bottom: 150, 
   left: 80
 }
 
@@ -10,12 +10,33 @@ var width = 900 - margin.left - margin.right;
 var height = 500 - margin.top - margin.bottom;
 
 //will hold all the data from the .tsv file
+var teamsArr = [];
+var teamsObj = {};
 var playerArr = [];
 
 d3.tsv('./player_data.tsv', function(file){
-  playerArr = file;
+  teamsArr = file;
+  // console.log(teamsArr)
+
+  teamsObj = teamsArr.reduce(function(acc, el){
+    var currTeamId = el["Team ID"];
+    // console.log(currTeamId)
+    if (acc[currTeamId] === undefined){
+      acc[currTeamId] = [el];
+    } else {
+      acc[currTeamId].push(el)
+    }
+    return acc
+  }, {});
+
+  // console.log(teamsObj)
+
+  playerArr = teamsObj['69026'];
+  // console.log(playerArr)
 
   var teamName = playerArr[0]["Team Name"];
+  var area = playerArr[0]["Area"];
+  var season = playerArr[0]["Season"]
 
   var totalTeamWins = playerArr.reduce(function(acc, el){
         return acc + Number(el.Won);
@@ -57,7 +78,7 @@ d3.tsv('./player_data.tsv', function(file){
   var zScale;
 
   //array of all the keys in the player array (e.g., Player, City, etc)
-  var keys = playerArr.columns.slice(1);
+  var keys = teamsArr.columns.slice(1);
 
   d3.select('.svgChart')
       .attr('width', width + margin.left + margin.right)
@@ -73,6 +94,7 @@ d3.tsv('./player_data.tsv', function(file){
 
   //DRAW TEAM NAME
   drawTeamName();
+  drawChartFooter();
 
   /******************EVENT LISTENERS*********************/
   //draw different charts based on which button is clicked
@@ -125,14 +147,20 @@ d3.tsv('./player_data.tsv', function(file){
       chartTitle = "Match Win Percentage (by Player)"
     }
 
+    chartTitle += "*"
+
     drawTitle(chartTitle);
     
     //sort by y-axis value (and if same values, then sort by last name alphabetically)
     if (type === 'SinglesDoubles'){
       playerArr.sort(function(a,b) { 
-        return a.Matches - b.Matches || a.Player.localeCompare(b.Player);
+        return Number(a.Matches) - Number(b.Matches) || a.Player.localeCompare(b.Player);
       });
-      yMax = d3.max(playerArr.map(d => d3.max(d['Matches'])));
+      yMax = d3.max(playerArr.map(d => {
+        str_data = d['Matches'];
+        num_data = Number(d['Matches']);
+        return num_data;
+      }));
     } else if (type === 'WinPercentage'){
       playerArr.sort(function(a,b) {
         return a['Win %'] - b['Win %'] || a.Player.localeCompare(b.Player);
@@ -140,9 +168,14 @@ d3.tsv('./player_data.tsv', function(file){
       yMax = 100;
     } else {
       playerArr.sort(function(a,b) { 
-        return a[type] - b[type] || a.Player.localeCompare(b.Player);
+        return Number(a[type]) - Number(b[type]) || a.Player.localeCompare(b.Player);
       });
-      yMax = d3.max(playerArr.map(d => d3.max(d[type])));
+      yMax = d3.max(playerArr.map(d => {
+        str_data = d[type]
+        num_data = Number(d[type])
+        return num_data
+        //return d3.max(num_data);
+      }));
     }
 
     xScale = d3.scaleBand()
@@ -214,13 +247,13 @@ d3.tsv('./player_data.tsv', function(file){
         });
 
     legend.append('rect')
-        .attr('x', width+80)
+        .attr('x', width+85)
         .attr('width', 19)
         .attr('height', 19)
         .attr('fill', zScale);
 
     legend.append('text')
-        .attr('x', width+75)
+        .attr('x', width+80)
         .attr('y', 9.5)
         .attr('dy', '0.32em')
         .text(d => d);
@@ -249,6 +282,16 @@ d3.tsv('./player_data.tsv', function(file){
         .attr('y', margin.top / 2)
         .attr("text-anchor", "middle")
         .text(teamName)
+  }
+
+  function drawChartFooter(){
+    d3.select('.svgChart')
+      .append('text')
+        .attr('class', 'chartFooter')
+        .attr('x', margin.left + 10)
+        .attr('y', height + margin.top + margin.bottom - 5)
+        .attr("text-anchor", "middle")
+        .text("*Data from USTA NorCal")
   }
 
   function drawTitle(title){

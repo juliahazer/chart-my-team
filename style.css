@@ -65,7 +65,8 @@ select {
 }
 
 .teamName,
-.chartTitle {
+.chartTitle,
+.chartFooter {
   fill: #87684E;
 }
 
@@ -76,6 +77,10 @@ select {
 
 .chartTitle {
   font-size: 16px;
+}
+
+.chartFooter {
+  font-size: 11px;
 }
 
 .xAxis text,
