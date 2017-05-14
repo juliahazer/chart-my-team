@@ -76,6 +76,8 @@ d3.tsv('./player_data.tsv', function(file){
 
   d3.select('#selectTeams')
       .classed('hidden', false)
+  d3.select('#selectTeamsLabel')
+      .classed('hidden', false)
 
   newTeamId(optionArr[0][1])
 

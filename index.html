@@ -5,13 +5,12 @@
   <title>Chart My Team</title>
   <!-- Bootstrap -->
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-  <!-- Google font -->
-  <link href="//fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet">
   <!-- Custom stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+  <!--racket image & header -->
   <div class="header container-fluid">   
     <div>
       <svg class="svgRacket" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="80px" height="80px" viewBox="0 0 1000 1000" enable-background="new 0 0 1000 1000" xml:space="preserve">
@@ -25,16 +24,30 @@
     </div>
   </div>
 
+  <!--form-->
   <div class='container-fluid'>
-    <div class="form-group col-lg-4 col-lg-offset-4
-        col-md-6 col-md-offset-3
-        col-sm-10 col-sm-offset-1">
-      <label class="hidden" id="selectTeamsLabel" for="selectTeams">Select a Team:</label>
-      <select class="form-control hidden" id="selectTeams">
-      </select>
+    <div class="form-group row">
+      <div class="col-lg-3 col-lg-offset-2
+        col-md-2 col-md-offset-2
+        col-sm-3 col-sm-offset-1
+        col-xs-12
+        col-form-label">
+        <label class="hidden" id="selectTeamsLabel" 
+          for="selectTeams">
+          Choose a Team:
+        </label>
+      </div>
+      <div class="col-lg-3 col-lg-offset-0
+        col-md-6 col-md-offset-0
+        col-sm-7 col-sm-offset-0
+        col-xs-10 col-xs-offset-1"> 
+        <select class="form-control hidden" id="selectTeams">
+        </select>
+      </div>
     </div>
   </div>
 
+  <!--buttons-->
   <div class='container-fluid'>
     <p class="selectBtns">
       <a class="active btn btn-lg btnCustom" href="" 
@@ -68,8 +81,10 @@
     </p>
   </div>
 
+  <!--SVG Chart-->
   <div>
-    <svg class="svgChart"></svg>
+    <svg class="svgChart" preserveAspectRatio="xMinYMin meet" 
+    viewBox="0 0 900 500"></svg>
   </div>
 
   <script src="//d3js.org/d3.v4.min.js"></script>

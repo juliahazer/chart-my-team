@@ -59,8 +59,12 @@ h1 {
   background: #75AD77;
 }
 
-/*#selectTeams,
-#selectTeamsLabel */
+label {
+  font-weight: normal;
+  font-size: 16px;
+  color: #87684E;
+  padding-top: 6px;
+}
 
 .hidden {
   display: none;
@@ -103,4 +107,29 @@ div.tooltip {
   border: 2px solid #A26E56;
   border-radius: 8px;
   pointer-events: none;
+}
+
+@media (max-width: 920px){
+  /*on smaller screens, shrink the buttons & padding*/
+  .btnCustom {
+    font-size: 14px;
+  }
+  .btn-group-lg>.btn,
+  .btn-lg {
+    padding: 5px 10px;
+  }
+
+  /*Make the SVG responsive*/
+  .svgChart {
+    width: 95%;
+    height: 56%;
+  }
+}
+
+@media (min-width: 768px){
+  /*on larger screens: move the form labels to the right 
+  (instead of center) since inline w/ select*/
+  .col-form-label {
+    text-align: right;
+  }
 }
