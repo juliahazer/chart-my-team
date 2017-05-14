@@ -112,7 +112,7 @@ div.tooltip {
 @media (max-width: 920px){
   /*on smaller screens, shrink the buttons & padding*/
   .btnCustom {
-    font-size: 14px;
+    font-size: 12px;
   }
   .btn-group-lg>.btn,
   .btn-lg {
@@ -124,6 +124,14 @@ div.tooltip {
     width: 95%;
     height: 56%;
   }
+
+  .headerRow h1{
+    font-size: 28px;
+  }
+
+  .svgRacket {
+    height: 60px;
+  }
 }
 
 @media (min-width: 768px){
@@ -131,5 +139,15 @@ div.tooltip {
   (instead of center) since inline w/ select*/
   .col-form-label {
     text-align: right;
+  }
+}
+
+@media (max-width: 400px) {
+  .headerRow h1 {
+    font-size: 25px;
+  }
+
+  .svgRacket {
+    display: none;
   }
 }
