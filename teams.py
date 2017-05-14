@@ -6,7 +6,7 @@ import re
 #PULL DATA FOR A SUBSET OF THE USTA NORCAL TENNIS TEAM DATA:
 #SPECIFALLY FOR: 
   #2016 ADULT 18 & OVER WOMENS 4.0 
-  #SF & EB ONLY
+  #SF & EB & SB (South Bay) & UP & MA ONLY
 #FROM THIS LIST: 
 #https://www.ustanorcal.com/listteams.asp?leagueid=1823
 
@@ -20,7 +20,7 @@ a_tags = soup.findAll('a', href=pattern);
 
 for a_tag in a_tags:
   area_code = a_tag.find_parent('td').next_sibling.next_sibling.next_sibling.next_sibling.text
-  if area_code == 'EB' or area_code == 'SF':
+  if area_code == 'EB' or area_code == 'SF' or area_code == 'SB' or area_code == 'UP' or area_code == 'MA':
     #extra last 5 numbers of url only
     urlsIdArr.append(a_tag['href'][-5:])
  
