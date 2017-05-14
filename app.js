@@ -2,7 +2,7 @@
 var margin = {
   top: 60, 
   right: 120, 
-  bottom: 150, 
+  bottom: 160, 
   left: 80
 }
 
@@ -14,13 +14,36 @@ var teamsArr = [];
 var teamsObj = {};
 var playerArr = [];
 
+var optionHtml = '';
+var optionArr = [];
+
+var chartId;
+
+var teamName = '';
+var area = '';
+var season = '';
+
+var totalTeamWins;
+var totalTeamLoss;
+var totalTeamPlays;
+var teamWinPercent;
+var teamLossPercent;
+var tooltip;
+
+var yMax;
+var xScale;
+var yScale;
+var zScale;
+
+var keys;
+
+var g;
+
 d3.tsv('./player_data.tsv', function(file){
   teamsArr = file;
-  // console.log(teamsArr)
 
   teamsObj = teamsArr.reduce(function(acc, el){
     var currTeamId = el["Team ID"];
-    // console.log(currTeamId)
     if (acc[currTeamId] === undefined){
       acc[currTeamId] = [el];
     } else {
@@ -29,74 +52,101 @@ d3.tsv('./player_data.tsv', function(file){
     return acc
   }, {});
 
-  // console.log(teamsObj)
+  for (var prop in teamsObj) {
+    var currTeamName = teamsObj[prop][0]["Team Name"];
+    optionArr.push([currTeamName, prop]);
+  } 
 
-  playerArr = teamsObj['69026'];
-  // console.log(playerArr)
+  //sort teams alphabetically
+  optionArr.sort(function(a,b){
+    return (a[0] < b[0]) ? -1 : 1;
+  });
 
-  var teamName = playerArr[0]["Team Name"];
-  var area = playerArr[0]["Area"];
-  var season = playerArr[0]["Season"]
+  for (var i = 0; i < optionArr.length; i++){
+    //for each unique team, add id & team name
+    //into option tags for select 
+    optionHtml += `
+      <option value='${optionArr[i][1]}'>
+      ${optionArr[i][0]}</option>
+    `;
+  }
 
-  var totalTeamWins = playerArr.reduce(function(acc, el){
-        return acc + Number(el.Won);
-      }, 0);
-  var totalTeamLoss = playerArr.reduce(function(acc, el){
-        return acc + Number(el.Lost);
-      }, 0);
-  var totalTeamPlays = totalTeamWins + totalTeamLoss;
-  var teamWinPercent = Math.round(totalTeamWins / totalTeamPlays * 100);
-  var teamLossPercent = Math.round(totalTeamLoss / totalTeamPlays * 100);
+  d3.select('#selectTeams')
+      .html(optionHtml)
 
-  //this converts some of the "-" fields to "0"
-  playerArr.map(function(el){
-    if (el.Defaults === "-"){
-      el.Defaults = '0'
-    }
-    if (el["Win %"] !== "-"){
-      el["Win %"] = parseInt(el["Win %"])
-    }  
-    if (el.Doubles === "-"){
-      el.Doubles = '0'
-    }
-    if (el.Singles === "-"){
-      el.Singles = '0'
-    }
-    return el
-  })
+  d3.select('#selectTeams')
+      .classed('hidden', false)
 
-  // console.log(playerArr)
+  newTeamId(optionArr[0][1])
 
-  var tooltip = d3.select("body")
-                  .append("div")
-                  .classed('tooltip', true)
-                  .style("opacity",0);
+  function newTeamId(chartId){
+    //SET TO THE FIRST TEAMS OBJ
+    //NEED TO UPDATE THIS ID IF CHANGE
+    playerArr = teamsObj[chartId];
 
-  var yMax;
-  var xScale;
-  var yScale;
-  var zScale;
+    teamName = playerArr[0]["Team Name"];
+    area = playerArr[0]["Area"];
+    season = playerArr[0]["Season"]
 
-  //array of all the keys in the player array (e.g., Player, City, etc)
-  var keys = teamsArr.columns.slice(1);
+    totalTeamWins = playerArr.reduce(function(acc, el){
+          return acc + Number(el.Won);
+        }, 0);
+    totalTeamLoss = playerArr.reduce(function(acc, el){
+          return acc + Number(el.Lost);
+        }, 0);
+    totalTeamPlays = totalTeamWins + totalTeamLoss;
+    teamWinPercent = Math.round(totalTeamWins / totalTeamPlays * 100);
+    teamLossPercent = Math.round(totalTeamLoss / totalTeamPlays * 100);
 
-  d3.select('.svgChart')
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
-      .classed('svgClass', true)
-  
-  var g = d3.select('.svgChart')
-    .append('g')
-      .attr('transform', 'translate(' + margin.left + "," + margin.top + ")");
+    //this converts some of the "-" fields to "0"
+    playerArr.map(function(el){
+      if (el.Defaults === "-"){
+        el.Defaults = '0'
+      }
+      if (el["Win %"] !== "-"){
+        el["Win %"] = parseInt(el["Win %"])
+      }  
+      if (el.Doubles === "-"){
+        el.Doubles = '0'
+      }
+      if (el.Singles === "-"){
+        el.Singles = '0'
+      }
+      return el
+    })
 
-  //ON FIRST LOAD DRAW CHART
-  drawChart('Matches');
+    // console.log(playerArr)
 
-  //DRAW TEAM NAME
-  drawTeamName();
-  drawChartFooter();
+    tooltip = d3.select("body")
+                    .append("div")
+                    .classed('tooltip', true)
+                    .style("opacity",0);
+
+    //array of all the keys in the player array (e.g., Player, City, etc)
+    keys = teamsArr.columns.slice(1);
+
+    d3.select('.svgChart')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .classed('svgClass', true)
+    
+    g = d3.select('.svgChart')
+      .append('g')
+        .attr('transform', 'translate(' + margin.left + "," + margin.top + ")");
+
+    //ON FIRST LOAD CALL REMOVE CHART 
+    //TO first remove any previous chart & draw new one
+    removeChart('Matches');
+  }
 
   /******************EVENT LISTENERS*********************/
+  //when change select dropdown option
+  //initiate a new team to draw the chart
+  d3.select('#selectTeams').on('change', function(){
+    var optionVal = d3.select('#selectTeams').property('value');
+    newTeamId(optionVal);
+  })
+
   //draw different charts based on which button is clicked
   d3.selectAll('.btnCustom').on('click', function(){
     d3.selectAll('.btnCustom')
@@ -110,6 +160,7 @@ d3.tsv('./player_data.tsv', function(file){
 
   /******************FUNCTIONS*********************/
   function drawChart(type){
+
     var colorArr = [];
     var keysArr = [];
     var chartTitle = "# ";
@@ -150,6 +201,9 @@ d3.tsv('./player_data.tsv', function(file){
     chartTitle += "*"
 
     drawTitle(chartTitle);
+        //DRAW TEAM NAME
+    drawTeamName();
+    drawChartFooter();
     
     //sort by y-axis value (and if same values, then sort by last name alphabetically)
     if (type === 'SinglesDoubles'){
@@ -275,6 +329,10 @@ d3.tsv('./player_data.tsv', function(file){
   }
 
   function drawTeamName(){
+    //first remove old team name
+    d3.select('.teamName')
+      .remove();
+    //then draw the new team name
     d3.select('.svgChart')
       .append('text')
         .attr('class', 'teamName')
@@ -285,6 +343,10 @@ d3.tsv('./player_data.tsv', function(file){
   }
 
   function drawChartFooter(){
+    //first remove old footer
+    d3.select('.chartFooter')
+      .remove();
+    //then draw the new one
     d3.select('.svgChart')
       .append('text')
         .attr('class', 'chartFooter')

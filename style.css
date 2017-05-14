@@ -59,9 +59,11 @@ h1 {
   background: #75AD77;
 }
 
-select {
-  display: block;
-  margin: 0 auto;
+/*#selectTeams,
+#selectTeamsLabel */
+
+.hidden {
+  display: none;
 }
 
 .teamName,
