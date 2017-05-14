@@ -1,7 +1,7 @@
 // set the dimensions and margins of the graph
 var margin = {
   top: 20, 
-  right: 100, 
+  right: 120, 
   bottom: 130, 
   left: 80
 }
@@ -60,16 +60,17 @@ d3.tsv('./player_data.tsv', function(file){
   var keys = playerArr.columns.slice(1);
 
 
-  d3.select('svg')
+  d3.select('.svgChart')
       .attr('width', width + margin.left + margin.right)
       .attr('height', height + margin.top + margin.bottom)
+      .classed('svgClass', true)
   
-  var g = d3.select('svg')
+  var g = d3.select('.svgChart')
     .append('g')
       .attr('transform', 'translate(' + margin.left + "," + margin.top + ")");
 
   //ON FIRST LOAD, DRAW TITLE & DISPLAY MATCHES
-  drawTitle();
+  // drawTitle();
   drawChart('Matches');
 
   function drawChart(type){
@@ -97,7 +98,7 @@ d3.tsv('./player_data.tsv', function(file){
       colorArr = ['#516EBA', '#E3C247'];
       keysArr = [keys[10], keys[11]];
     } else if (type === 'WinPercentage'){
-      colorArr = ['yellow'];
+      colorArr = ['#EF7D5A'];
       keysArr = [keys[9]];
     }
     
@@ -120,9 +121,9 @@ d3.tsv('./player_data.tsv', function(file){
     }
 
     //make the yMax 1 more than the greatest number value
-    if (yMax !== 100){
-      yMax++;
-    }
+    // if (yMax !== 100){
+    //   yMax++;
+    // }
 
     xScale = d3.scaleBand()
       .rangeRound([0, width])
@@ -150,6 +151,8 @@ d3.tsv('./player_data.tsv', function(file){
       .data(d => d)
       .enter()
       .append('rect')
+        .style('opacity', 0)
+        .attr('class', 'bar')
         .attr('x', d => {
           return xScale(d.data.Player) 
         })
@@ -159,19 +162,42 @@ d3.tsv('./player_data.tsv', function(file){
         .attr('height', d => yScale(d[0]) - yScale(d[1]))
         .attr('width', xScale.bandwidth())
       .on('mouseenter', function(d){
-        tooltipDrawText(d);
+        drawTooltipText(d);
       })
       .on('mouseout', () => tooltip.style('opacity', 0));
-    
-    drawMatchLegend(keysArr);
+
+    /*add transition effects to fade in*/
+    g.selectAll('rect').
+      transition().duration(800).ease(d3.easeLinear).style('opacity', 1)
+
+    // d3.select('.svgChart').selectAll('.bar')
+    //   .data(data)
+    //   .enter()
+    //   .append('text')
+      // .text(d => {
+      //   console.log(d)
+      //   return d
+      // })
+      // .attr('x', function(d,i){
+      //   return 40
+      //   // return i * (width / playerArr.length) + 5;
+      // })
+      // .attr('y', function(d){
+      //   return 40
+      //   // return height - d*4 + 15;
+      // })
+      // .attr('font-size', 14)
+      // .attr('fill', 'black');
+
+    drawLegend(keysArr);
 
     drawXAxis();
     drawYAxis();
   }
 
-  function drawMatchLegend(keys){
+  function drawLegend(keys){
     var legend = g.append('g')
-        .attr('class', 'legendMatches')
+        .attr('class', 'legend')
         .attr('font-family', 'sans-serif')
         .attr('font-size', 10)
         .attr('text-anchor', 'end')
@@ -184,24 +210,25 @@ d3.tsv('./player_data.tsv', function(file){
         });
 
     legend.append('rect')
-        .attr('x', width+50+19)
+        .attr('x', width+80)
         .attr('width', 19)
         .attr('height', 19)
         .attr('fill', zScale);
 
     legend.append('text')
-        .attr('x', width+50+10)
+        .attr('x', width+75)
         .attr('y', 9.5)
         .attr('dy', '0.32em')
         .text(d => d);
   }
 
-  function tooltipDrawText(d){
+  function drawTooltipText(d){
     tooltip.html(`
       ${d.data.Player}<br>
-      Win: ${d.data["Win %"]}%<br>
-      # Singles: ${d.data.Singles}<br>
-      # Doubles: ${d.data.Doubles}<br>
+      ${d.data["Win %"]}% Win<br> 
+      Won: ${d.data.Win}; Loss: ${d.data.Loss}<br>
+      ${d.data.Singles} Singles Played<br>
+      ${d.data.Doubles} Doubles Played<br>
       City: ${d.data.City}<br>
       Rating: ${d.data.Rating}`
     )
@@ -210,20 +237,20 @@ d3.tsv('./player_data.tsv', function(file){
           .style('top', d3.event.pageY + 'px');
   }
 
-  function drawTitle(){
-    d3.select('svg')
-      .append("text")
-        .attr("x", (width / 2))             
-        .attr("y", margin.top)
-        .attr("text-anchor", "middle")  
-        .style("font-size", "16px")   
-        .text("Team");
-  }
+  // function drawTitle(){
+  //   d3.select('.svgChart')
+  //     .append("text")
+  //       .attr("x", margin.left)             
+  //       .attr("y", margin.top)
+  //       .attr("text-anchor", "middle")  
+  //       .style("font-size", "16px")   
+  //       .text("Team");
+  // }
 
   function drawXAxis(){
     var xAxis = d3.axisBottom(xScale);
     //add the x Axis
-    d3.select('svg')
+    d3.select('.svgChart')
       .append('g')
         .attr('class', 'xAxis')
         .attr('transform', 'translate(' + margin.left + ',' + (height + margin.top) + ")")
@@ -243,7 +270,7 @@ d3.tsv('./player_data.tsv', function(file){
     var yAxis = d3.axisRight(yScale)
                   .ticks(numTicks);
     //add the y Axis
-    d3.select('svg')
+    d3.select('.svgChart')
       .append('g')
         .attr('class', 'yAxis')
         .attr('transform', 'translate(' + (width + margin.left) + ',' + margin.top + ')') //shifts axis
@@ -251,33 +278,43 @@ d3.tsv('./player_data.tsv', function(file){
   }
 
   //EVENT LISTENER FOR SELECT CHANGE
-  d3.select('select').on('change', function(){
-    var newVal = d3.select('select').property('value');
-    removeChart();
-    drawChart(newVal);
+  d3.selectAll('.btnCustom').on('click', function(){
+    d3.selectAll('.btnCustom')
+      .classed('active', false);
+    d3.event.preventDefault();
+    d3.select(this)
+      .classed('active', true)
+    var newVal = d3.select(this).attr('data-val');
+    removeChart(newVal);
   })
 
-  function removeChart(){
-    var svg = d3.select('svg');
+  function removeChart(newVal){
+    var svg = d3.select('.svgChart');
 
     svg.select('.chart')
-        .remove(); 
-    removeAxes();
-    removeLegend();
+        .style('opacity', 1)
+        /*add transition effects to fade out*/
+        .transition().duration(300).ease(d3.easeLinear).style('opacity', 0)
+        .remove();
+        setTimeout(function(){
+          removeAxes();
+          removeLegend();
+          drawChart(newVal)
+        }, 300); 
   }
 
   function removeAxes(){
-    d3.select('svg')
+    d3.select('.svgChart')
       .select('.xAxis')
         .remove()
-    d3.select('svg')
+    d3.select('.svgChart')
       .select('.yAxis')
         .remove()
   }
 
   function removeLegend(){
-    d3.select('svg')
-      .select('.legendMatches')
+    d3.select('.svgChart')
+      .select('.legend')
         .remove()
   }
 

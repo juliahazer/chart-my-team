@@ -1,13 +1,60 @@
+/*
+cream: #F4E0CB;
+white: #F4F5F3
+green: #659667
+orange: #EF7D5A
+brown: #564036
+light brown: #A8927B
+blue: #516EBA
+yellow: #E3C247
+dark blue: #085B6F
+*/
+
 body {
   font-family: 'Tahoma', serif;
   text-align: center;
-  background-color: #F4F5F3;
+  background-color: #F4E0CB;
+}
+
+.header {
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.header div {
+  float: left;
+  padding-top: 10px;
 }
 
 h1 {
-  color: #659667;
+  color: #4BA181;
+  font-weight: 700;
   font-size: 33px;
   letter-spacing: 0.1em;
+}
+
+.svgRacket {
+  fill: #4BA181;
+}
+
+.svgChart {
+  background-color: #F4F5F3;
+  border-radius: 20px;
+}
+
+.btnCustom {
+  color: white;
+  background-color: #3088BC;
+  font-size: 16px;
+  transition: all 0.3s ease-in-out;
+}
+
+.btnCustom:hover,
+.btnCustom:focus,
+.btnCustom:active,
+.active {
+  color: white;
+  background: #FFA435;
 }
 
 select {
@@ -15,8 +62,10 @@ select {
   margin: 0 auto;
 }
 
-.xAxis text {
-  fill: #085B6F;
+.xAxis text,
+.yAxis text,
+.legend text {
+  fill: #4BA181;
   font-size: 13px;
 }
 
@@ -24,12 +73,11 @@ div.tooltip {
   point-events: none;
   position: absolute;
   text-align: center;
-  width: 150px;
-  height: 80px;
-  padding: 2px;
-  font: 12px sans-serif;
-  background: lightsteelblue;
-  border: 0px;
+  padding: 8px;
+  font-size: 12px;
+  color: #085B6F;
+  background: #FFF7EE;
+  border: 2px solid #A26E56;
   border-radius: 8px;
   pointer-events: none;
 }
