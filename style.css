@@ -135,7 +135,7 @@ div.tooltip {
 }
 
 @media (min-width: 768px){
-  /*on larger screens: move the form labels to the right 
+  /*on larger screens: move the form labels to the right
   (instead of center) since inline w/ select*/
   .col-form-label {
     text-align: right;

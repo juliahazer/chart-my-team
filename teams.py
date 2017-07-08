@@ -4,14 +4,14 @@ import csv
 import re
 
 #PULL DATA FOR A SUBSET OF THE USTA NORCAL TENNIS TEAM DATA:
-#SPECIFALLY FOR: 
-  #2016 ADULT 18 & OVER WOMENS 4.0 
+#SPECIFALLY FOR:
+  #2016 ADULT 18 & OVER WOMENS 4.0
   #SF & EB & SB (South Bay) & UP & MA ONLY
-#FROM THIS LIST: 
+#FROM THIS LIST:
 #https://www.ustanorcal.com/listteams.asp?leagueid=1823
 
 data = requests.get('https://www.ustanorcal.com/listteams.asp?leagueid=1823')
-soup = bs4.BeautifulSoup(data.text, "html.parser")  
+soup = bs4.BeautifulSoup(data.text, "html.parser")
 
 urlsIdArr = []
 
@@ -23,8 +23,7 @@ for a_tag in a_tags:
   if area_code == 'EB' or area_code == 'SF' or area_code == 'SB' or area_code == 'UP' or area_code == 'MA':
     #extra last 5 numbers of url only
     urlsIdArr.append(a_tag['href'][-5:])
- 
-#urlsIdArr = ['68931', '69395', '70194', '69089', '69294', '69415', '69568', '69350', '70076', '69726', '68869', '70162', '69846', '69355', '69815', '69402', '69492', '69401', '69200', '70073', '68989', '69881', '69672', '69026']
+
 url = 'https://www.ustanorcal.com/teaminfo.asp?id='
 
 #create a list with a sub list with data for each player
@@ -46,14 +45,10 @@ for url_id in urlsIdArr:
 
   area_pattern = re.compile(r'Area:')
   area_text= soup.find(text=area_pattern).next_sibling.text
-  
+
   print(area_text)
   print(season)
   print(team_name)
-
-  # if team_name == '':
-  #   id += 1
-  #   continue
 
   roster_table = []
 
@@ -84,10 +79,6 @@ for url_id in urlsIdArr:
     sublist_player.insert(0, team_name)
     sublist_player.append(url_id)
     list_players.append(sublist_player)
-
-  # id += 1
-
-#print(list_players)
 
 for player in list_players:
   str_win_loss = player[7]
